@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bonded.work — Contractor License Monitoring & Alerts</title>
+  <meta name="description" content="Bonded monitors your contractor license, bond, and workers comp status daily and alerts you before a lapse threatens your ability to work." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #4a4a46;
+      --color-text-tertiary: #888780;
+      --color-bg-primary: #ffffff;
+      --color-bg-secondary: #f4f3ef;
+      --color-border-primary: rgba(0,0,0,0.4);
+      --color-border-secondary: rgba(0,0,0,0.3);
+      --color-border-tertiary: rgba(0,0,0,0.15);
+      --color-green-dark: #27500A;
+      --color-green-mid: #3B6D11;
+      --color-green-light: #EAF3DE;
+      --color-green-border: #C0DD97;
+      --color-red-dark: #A32D2D;
+      --color-amber-dark: #854F0B;
+      --radius-md: 4px;
+      --radius-lg: 6px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-text-primary: #f0efe9;
+        --color-text-secondary: #b4b2a9;
+        --color-text-tertiary: #888780;
+        --color-bg-primary: #1c1c1a;
+        --color-bg-secondary: #252523;
+        --color-border-primary: rgba(255,255,255,0.4);
+        --color-border-secondary: rgba(255,255,255,0.3);
+        --color-border-tertiary: rgba(255,255,255,0.15);
+        --color-green-dark: #C0DD97;
+        --color-green-mid: #97C459;
+        --color-green-light: #173404;
+        --color-green-border: #3B6D11;
+        --color-red-dark: #F09595;
+        --color-amber-dark: #FAC775;
+      }
+    }
+
+    html { font-size: 16px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      line-height: 1.5;
+      padding: 0 1.5rem;
+    }
+
+    .gs {
+      max-width: 680px;
+      margin: 0 auto;
+      padding-bottom: 4rem;
+    }
+
+    /* NAV */
+    .gs-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 0;
+      border-bottom: 2px solid var(--color-border-primary);
+      margin-bottom: 2.5rem;
+    }
+    .gs-logo {
+      font-family: 'Roboto Slab', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--color-text-primary);
+      text-decoration: none;
+    }
+    .gs-logo-dot { color: #3B6D11; }
+    .gs-logo-sub {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .gs-launch {
+      font-size: 11px;
+      font-weight: 500;
+      border: 1.5px solid #3B6D11;
+      color: #3B6D11;
+      padding: 4px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* HERO */
+    .gs-hero {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border-tertiary);
+    }
+    .gs-h1 {
+      font-family: 'Roboto Slab', serif;
+      font-size: 34px;
+      line-height: 1.15;
+      font-weight: 700;
+      margin: 0 0 1rem;
+      letter-spacing: -0.5px;
+    }
+    .gs-sub {
+      font-size: 16px;
+      color: var(--color-text-secondary);
+      line-height: 1.65;
+      font-weight: 400;
+    }
+
+    /* STATE PILLS */
+    .gs-states {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .gs-states-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+    .gs-state {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+    .gs-state.live {
+      background: var(--color-green-light);
+      color: var(--color-green-dark);
+      border: 1px solid var(--color-green-border);
+    }
+    .gs-state.soon {
+      background: var(--color-bg-secondary);
+      color: var(--color-text-tertiary);
+      border: 1px solid var(--color-border-tertiary);
+      font-weight: 400;
+    }
+
+    /* LOOKUP */
+    .gs-lookup {
+      border: 2px solid var(--color-border-primary);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .gs-lookup-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .gs-lookup-row {
+      display: flex;
+      gap: 8px;
+    }
+    .gs-lookup-row input {
+      flex: 1;
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--color-border-secondary);
+      border-radius: 3px;
+      background: var(--color-bg-secondary);
+      color: var(--color-text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .gs-lookup-row input:focus { border-color: var(--color-border-primary); }
+    .gs-lookup-row input::placeholder { color: var(--color-text-tertiary); }
+    .gs-lookup-btn {
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 18px;
+      background: var(--color-text-primary);
+      color: var(--color-bg-primary);
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .gs-lookup-btn:hover { opacity: 0.85; }
+    .gs-lookup-hint {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      margin-top: 8px;
+    }
+
+    /* RESULT */
+    .gs-result {
+      display: none;
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--color-border-tertiary);
+      padding-top: 1.25rem;
+    }
+    .gs-result.visible { display: block; }
+    .gs-result-name {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: var(--color-text-secondary);
+    }
+    .gs-result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .gs-metric {
+      background: var(--color-bg-secondary);
+      border-radius: 3px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--color-border-tertiary);
+    }
+    .gs-metric.green { border-left-color: #639922; }
+    .gs-metric.amber { border-left-color: #BA7517; }
+    .gs-metric.red { border-left-color: #A32D2D; }
+    .gs-metric-label {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      margin-bottom: 4px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .gs-metric-value { font-size: 14px; font-weight: 500; }
+    .gs-metric-value.green { color: #3B6D11; }
+    .gs-metric-value.amber { color: #BA7517; }
+    .gs-metric-value.red { color: #A32D2D; }
+    .gs-result-db-link {
+      font-size: 12px;
+      margin-bottom: 1rem;
+    }
+    .gs-result-db-link a { color: var(--color-text-secondary); }
+    .gs-result-note {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    /* WAITLIST PROMPT */
+    .gs-waitlist-prompt {
+      background: var(--color-bg-secondary);
+      border-radius: 3px;
+      padding: 1rem 1.25rem;
+    }
+    .gs-waitlist-prompt p {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .gs-waitlist-row { display: flex; gap: 8px; }
+    .gs-waitlist-row input {
+      flex: 1;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      padding: 9px 12px;
+      border: 1.5px solid var(--color-border-secondary);
+      border-radius: 3px;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      outline: none;
+    }
+    .gs-waitlist-row input:focus { border-color: var(--color-border-primary); }
+    .gs-waitlist-row button {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 16px;
+      background: #3B6D11;
+      color: #EAF3DE;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .gs-waitlist-row button:hover { opacity: 0.88; }
+
+    /* DIVIDER */
+    .gs-divider {
+      border: none;
+      border-top: 1px solid var(--color-border-tertiary);
+      margin: 2.5rem 0;
+    }
+    .gs-section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-tertiary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    /* CONTEXT BLOCK */
+    .gs-context {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-left: 4px solid #A32D2D;
+    }
+    .gs-context-head {
+      font-family: 'Roboto Slab', serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .gs-context-body {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+    }
+    .gs-context-body strong { color: var(--color-text-primary); font-weight: 500; }
+
+    /* HOW IT WORKS */
+    .gs-how { margin-bottom: 2.5rem; }
+    .gs-steps { display: flex; flex-direction: column; }
+    .gs-step {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--color-border-tertiary);
+    }
+    .gs-step:last-child { border-bottom: none; }
+    .gs-step-num {
+      font-family: 'Roboto Slab', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-text-tertiary);
+      width: 32px;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+    .gs-step-title { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+    .gs-step-body { font-size: 14px; color: var(--color-text-secondary); line-height: 1.55; }
+
+    /* ALERTS */
+    .gs-alerts { margin-bottom: 2.5rem; }
+    .gs-alert-cards { display: flex; flex-direction: column; gap: 8px; }
+    .gs-alert-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--color-bg-primary);
+      border: 1px solid var(--color-border-tertiary);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+    }
+    .gs-alert-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .gs-alert-dot.green { background: #639922; }
+    .gs-alert-dot.amber { background: #BA7517; }
+    .gs-alert-dot.red { background: #A32D2D; }
+    .gs-alert-body { flex: 1; }
+    .gs-alert-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .gs-alert-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 4px; }
+    .gs-alert-link { font-size: 12px; }
+    .gs-alert-link a { color: var(--color-text-secondary); }
+    .gs-alert-time {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      white-space: nowrap;
+      padding-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* RESOURCES */
+    .gs-resources { margin-bottom: 2.5rem; }
+    .gs-resources-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .gs-resources-header .gs-section-label { margin-bottom: 0; }
+    .gs-state-tabs { display: flex; gap: 6px; }
+    .gs-state-tab {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 2px;
+      border: 1.5px solid;
+      cursor: pointer;
+      background: none;
+      transition: opacity 0.15s;
+    }
+    .gs-state-tab.active {
+      background: var(--color-green-light);
+      color: var(--color-green-dark);
+      border-color: var(--color-green-border);
+    }
+    .gs-state-tab.inactive {
+      background: var(--color-bg-secondary);
+      color: var(--color-text-tertiary);
+      border-color: var(--color-border-tertiary);
+      cursor: not-allowed;
+    }
+    .gs-resource-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .gs-resource-card {
+      background: var(--color-bg-secondary);
+      border-radius: 3px;
+      padding: 1rem 1.25rem;
+      border: 0.5px solid var(--color-border-tertiary);
+    }
+    .gs-resource-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+    .gs-resource-desc {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .gs-resource-link { font-size: 12px; }
+    .gs-resource-link a { color: var(--color-text-secondary); }
+    .gs-coming-note {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      text-align: center;
+      padding: 2rem 0;
+      display: none;
+      border: 0.5px solid var(--color-border-tertiary);
+      border-radius: 3px;
+    }
+
+    /* PRICING */
+    .gs-pricing { margin-bottom: 2rem; }
+    .gs-price-card {
+      border: 2px solid var(--color-border-primary);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .gs-price-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border-tertiary);
+    }
+    .gs-price-name {
+      font-family: 'Roboto Slab', serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .gs-price-amount-wrap { text-align: right; }
+    .gs-price-amount {
+      font-family: 'Roboto Slab', serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .gs-price-period { font-size: 13px; color: var(--color-text-secondary); }
+    .gs-price-value {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.65;
+      margin-bottom: 1.25rem;
+    }
+    .gs-price-value strong { color: var(--color-text-primary); font-weight: 500; }
+    .gs-price-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .gs-price-feature {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .gs-price-feature::before {
+      content: '✓';
+      color: #3B6D11;
+      font-size: 13px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .gs-price-btn {
+      width: 100%;
+      font-family: 'Roboto', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 13px;
+      background: var(--color-text-primary);
+      color: var(--color-bg-primary);
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .gs-price-btn:hover { opacity: 0.85; }
+
+    /* DISCLAIMER */
+    .gs-disclaimer {
+      background: var(--color-bg-secondary);
+      border-radius: 3px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .gs-disclaimer p {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      line-height: 1.65;
+    }
+
+    /* FOOTER */
+    .gs-footer {
+      border-top: 2px solid var(--color-border-primary);
+      padding: 1.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .gs-footer-logo {
+      font-family: 'Roboto Slab', serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .gs-footer-copy { font-size: 12px; color: var(--color-text-tertiary); }
+
+    /* RESPONSIVE */
+    @media (max-width: 520px) {
+      .gs-h1 { font-size: 26px; }
+      .gs-result-grid { grid-template-columns: 1fr 1fr; }
+      .gs-price-features { grid-template-columns: 1fr; }
+      .gs-resource-grid { grid-template-columns: 1fr; }
+      .gs-waitlist-row { flex-direction: column; }
+      .gs-lookup-row { flex-direction: column; }
+      .gs-price-top { flex-direction: column; gap: 0.75rem; }
+      .gs-price-amount-wrap { text-align: left; }
+      .gs-footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="gs">
+
+    <nav class="gs-nav">
+      <div>
+        <div class="gs-logo">Bonded<span class="gs-logo-dot">.</span>work</div>
+        <div class="gs-logo-sub">License status monitoring &amp; alerts</div>
+      </div>
+      <div class="gs-launch">Now live in California</div>
+    </nav>
+
+    <div class="gs-hero">
+      <h1 class="gs-h1">Know your license status<br>before it becomes a problem.</h1>
+      <p class="gs-sub">Bonded pulls your publicly available license, bond, and workers comp data daily and sends you an alert if anything changes — so you always know where you stand, and exactly where to go if something needs attention.</p>
+    </div>
+
+    <div class="gs-states">
+      <span class="gs-states-label">States:</span>
+      <span class="gs-state live">California — live</span>
+      <span class="gs-state soon">Texas — coming soon</span>
+      <span class="gs-state soon">Florida — coming soon</span>
+    </div>
+
+    <div class="gs-lookup">
+      <div class="gs-lookup-label">Check your current status — free</div>
+      <div class="gs-lookup-row">
+        <input type="text" id="licInput" placeholder="California license number" maxlength="10" />
+        <button class="gs-lookup-btn" onclick="runLookup()">Check now</button>
+      </div>
+      <div class="gs-lookup-hint">Found on your pocket card and wall certificate. Data pulled directly from the state's public database.</div>
+
+      <div class="gs-result" id="resultBox">
+        <div class="gs-result-name" id="resultName"></div>
+        <div class="gs-result-grid">
+          <div class="gs-metric" id="mStatus">
+            <div class="gs-metric-label">License</div>
+            <div class="gs-metric-value" id="rStatus">—</div>
+          </div>
+          <div class="gs-metric" id="mExpiry">
+            <div class="gs-metric-label">Expires in</div>
+            <div class="gs-metric-value" id="rExpiry">—</div>
+          </div>
+          <div class="gs-metric" id="mWC">
+            <div class="gs-metric-label">Workers comp</div>
+            <div class="gs-metric-value" id="rWC">—</div>
+          </div>
+        </div>
+        <div class="gs-result-db-link"><a href="https://www.cslb.ca.gov/onlineservices/checklicensell/LicenseDetail.aspx" target="_blank" rel="noopener">View full record on the state database →</a></div>
+        <div class="gs-result-note">Status reflects publicly available state licensing data. Always verify directly with your state licensing board for decisions that depend on your license standing.</div>
+        <div class="gs-waitlist-prompt" id="ctaBox" style="display:none">
+          <p>Want an alert the moment this changes? Join the waitlist and we'll notify you when ongoing monitoring goes live.</p>
+          <div class="gs-waitlist-row">
+            <input type="email" placeholder="your@email.com" id="ctaInput" />
+            <button onclick="submitWaitlist()">Join waitlist →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gs-context">
+      <div class="gs-context-head">A lapse you don't know about is the expensive kind.</div>
+      <div class="gs-context-body">
+        Bond and workers comp lapses can trigger an automatic suspension within 24 hours. By the time you find out — usually at a job site or during a bid review — the damage is done. <strong>Reinstatement means fees, paperwork, and weeks of downtime</strong> while your phone stops ringing.<br><br>
+        Bonded doesn't manage your compliance. <strong>It makes sure you always know where you stand</strong> — and points you to the right place to act when something comes up.
+      </div>
+    </div>
+
+    <hr class="gs-divider" />
+
+    <div class="gs-how">
+      <div class="gs-section-label">How it works</div>
+      <div class="gs-steps">
+        <div class="gs-step">
+          <div class="gs-step-num">1</div>
+          <div class="gs-step-content">
+            <div class="gs-step-title">Enter your license number</div>
+            <div class="gs-step-body">We use it to look up your publicly available license, bond, and workers comp status directly from the state database. Nothing more is required.</div>
+          </div>
+        </div>
+        <div class="gs-step">
+          <div class="gs-step-num">2</div>
+          <div class="gs-step-content">
+            <div class="gs-step-title">We check your status every day</div>
+            <div class="gs-step-body">Status changes can appear within 24 hours of a lapse. We run a daily check against your last known status and flag any difference immediately.</div>
+          </div>
+        </div>
+        <div class="gs-step">
+          <div class="gs-step-num">3</div>
+          <div class="gs-step-content">
+            <div class="gs-step-title">You get notified — with a clear path forward</div>
+            <div class="gs-step-body">Text or email when your status changes or expiration approaches. Every alert includes a direct link to your license record and the right contact or form to address it — no searching, no guessing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="gs-divider" />
+
+    <div class="gs-alerts">
+      <div class="gs-section-label">What notifications look like</div>
+      <div class="gs-alert-cards">
+        <div class="gs-alert-card">
+          <div class="gs-alert-dot green"></div>
+          <div class="gs-alert-body">
+            <div class="gs-alert-title">Weekly status update — no changes</div>
+            <div class="gs-alert-desc">License #789012 · Active · Bond on file · Workers comp current · Expires in 214 days. No changes since last check.</div>
+            <div class="gs-alert-link"><a href="https://www.cslb.ca.gov" target="_blank" rel="noopener">View your license record →</a></div>
+          </div>
+          <div class="gs-alert-time">Every Monday</div>
+        </div>
+        <div class="gs-alert-card">
+          <div class="gs-alert-dot amber"></div>
+          <div class="gs-alert-body">
+            <div class="gs-alert-title">Workers comp expiration approaching</div>
+            <div class="gs-alert-desc">Your WC policy with State Comp is recorded as expiring 06/10/2026 — 30 days from now. Contact your insurer to renew, then verify the update reflects on your license record.</div>
+            <div class="gs-alert-link"><a href="https://www.cslb.ca.gov" target="_blank" rel="noopener">Check your license record →</a></div>
+          </div>
+          <div class="gs-alert-time">Alert</div>
+        </div>
+        <div class="gs-alert-card">
+          <div class="gs-alert-dot red"></div>
+          <div class="gs-alert-body">
+            <div class="gs-alert-title">Status change detected</div>
+            <div class="gs-alert-desc">Your license record changed from Active to Contractor Bond Suspended. Log in to your account to review and contact your bonding company directly.</div>
+            <div class="gs-alert-link"><a href="https://www.cslb.ca.gov" target="_blank" rel="noopener">View your license record →</a> &nbsp;·&nbsp; <a href="https://www.cslb.ca.gov/About_Us/Contact_Us.aspx" target="_blank" rel="noopener">Contact the board →</a></div>
+          </div>
+          <div class="gs-alert-time">Instant</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="gs-divider" />
+
+    <div class="gs-resources">
+      <div class="gs-resources-header">
+        <div class="gs-section-label">Helpful resources</div>
+        <div class="gs-state-tabs">
+          <button class="gs-state-tab active" id="tab-ca" onclick="switchState('ca')">California</button>
+          <button class="gs-state-tab inactive" id="tab-tx" onclick="switchState('tx')">Texas</button>
+          <button class="gs-state-tab inactive" id="tab-fl" onclick="switchState('fl')">Florida</button>
+        </div>
+      </div>
+
+      <div class="gs-resource-grid" id="resources-ca">
+        <div class="gs-resource-card">
+          <div class="gs-resource-title">Renew your license</div>
+          <div class="gs-resource-desc">Renew online through your CSLB account before expiration to avoid a lapse.</div>
+          <div class="gs-resource-link"><a href="https://www.cslb.ca.gov/OnlineServices/Login/Login.aspx" target="_blank" rel="noopener">CSLB online services →</a></div>
+        </div>
+        <div class="gs-resource-card">
+          <div class="gs-resource-title">Update bond information</div>
+          <div class="gs-resource-desc">Your bonding company files bond updates directly with the CSLB. Confirm they have your correct license number on file.</div>
+          <div class="gs-resource-link"><a href="https://www.cslb.ca.gov/Contractors/Applicants/Bond_Information.aspx" target="_blank" rel="noopener">Bond requirements →</a></div>
+        </div>
+        <div class="gs-resource-card">
+          <div class="gs-resource-title">Workers comp requirements</div>
+          <div class="gs-resource-desc">WC requirements vary by classification and number of employees. Review what applies to your license type.</div>
+          <div class="gs-resource-link"><a href="https://www.cslb.ca.gov/Contractors/Applicants/Workers_Compensation.aspx" target="_blank" rel="noopener">WC requirements →</a></div>
+        </div>
+        <div class="gs-resource-card">
+          <div class="gs-resource-title">Contact the board directly</div>
+          <div class="gs-resource-desc">For questions about your license status, suspensions, or reinstatement, reach the CSLB consumer line.</div>
+          <div class="gs-resource-link"><a href="https://www.cslb.ca.gov/About_Us/Contact_Us.aspx" target="_blank" rel="noopener">Contact page →</a> &nbsp;·&nbsp; (800) 321-2752</div>
+        </div>
+      </div>
+
+      <div class="gs-coming-note" id="coming-note">Resources for this state are coming soon. Join the waitlist to be notified when your state goes live.</div>
+    </div>
+
+    <hr class="gs-divider" />
+
+    <div class="gs-pricing">
+      <div class="gs-section-label">Pricing</div>
+      <div class="gs-price-card">
+        <div class="gs-price-top">
+          <div class="gs-price-name">Watchdog plan</div>
+          <div class="gs-price-amount-wrap">
+            <div class="gs-price-amount">$12</div>
+            <div class="gs-price-period">/ month. Cancel anytime.</div>
+          </div>
+        </div>
+        <p class="gs-price-value">
+          Finding out your license is suspended after the fact means <strong>reinstatement fees, lost bids, and weeks of downtime</strong>. Being informed early means you handle it on your schedule — before it costs you a job. One pulled contract pays for years of this service.
+        </p>
+        <div class="gs-price-features">
+          <div class="gs-price-feature">Daily status checks</div>
+          <div class="gs-price-feature">Bond status visibility</div>
+          <div class="gs-price-feature">Workers comp tracking</div>
+          <div class="gs-price-feature">Text + email notifications</div>
+          <div class="gs-price-feature">90 / 60 / 30-day expiration alerts</div>
+          <div class="gs-price-feature">Direct links to act on every alert</div>
+        </div>
+        <button class="gs-price-btn" onclick="scrollToWaitlist()">Join the waitlist →</button>
+      </div>
+    </div>
+
+    <div class="gs-disclaimer">
+      <p>Bonded is a monitoring and notification service. All data is sourced from publicly available state licensing databases and reflects what is on record at the time of each check. We are not a licensed compliance advisor and do not manage, guarantee, or take responsibility for your license status or outcomes. Always verify your standing directly with your state licensing board before making decisions that depend on your license. Bonded is a private company and is in no way affiliated with or endorsed by the Contractors State License Board (CSLB) or any other state licensing authority. This service is an independent, value-added tool built to complement publicly available state data.</p>
+    </div>
+
+    <div class="gs-footer">
+      <div class="gs-footer-logo">Bonded<span style="color:#3B6D11">.</span>work</div>
+      <div class="gs-footer-copy">Built for contractors · Not affiliated with any state licensing board</div>
+    </div>
+
+  </div>
+
+  <script>
+    const mockData = {
+      '999944': { name: 'Midstate Drillers · License #999944', status: 'Active', expiry: '214 days', wc: 'Insured', sc: 'green', ec: 'green', wc2: 'green' },
+      '1000002': { name: 'Randall Mark Dockery · License #1000002', status: 'Active', expiry: '265 days', wc: 'Exempt', sc: 'green', ec: 'green', wc2: 'amber' },
+      '1000003': { name: 'JR Mayorga Woodworking · License #1000003', status: 'Suspended', expiry: '265 days', wc: 'Lapsed', sc: 'red', ec: 'amber', wc2: 'red' },
+    };
+
+    function runLookup() {
+      const val = document.getElementById('licInput').value.trim();
+      if (!val) return;
+      const d = mockData[val] || { name: 'License #' + val, status: 'Active', expiry: '180 days', wc: 'Insured', sc: 'green', ec: 'green', wc2: 'green' };
+      document.getElementById('resultName').textContent = d.name;
+      const s = document.getElementById('rStatus');
+      s.textContent = d.status; s.className = 'gs-metric-value ' + d.sc;
+      document.getElementById('mStatus').className = 'gs-metric ' + d.sc;
+      const e = document.getElementById('rExpiry');
+      e.textContent = d.expiry; e.className = 'gs-metric-value ' + d.ec;
+      document.getElementById('mExpiry').className = 'gs-metric ' + d.ec;
+      const w = document.getElementById('rWC');
+      w.textContent = d.wc; w.className = 'gs-metric-value ' + d.wc2;
+      document.getElementById('mWC').className = 'gs-metric ' + d.wc2;
+      document.getElementById('ctaBox').style.display = 'block';
+      document.getElementById('resultBox').classList.add('visible');
+    }
+
+    function submitWaitlist() {
+      const email = document.getElementById('ctaInput').value.trim();
+      const license = document.getElementById('licInput').value.trim();
+      if (!email) return;
+      // Replace this URL with your Tally or Typeform endpoint
+      const formUrl = 'https://tally.so/r/YOUR_FORM_ID?email=' + encodeURIComponent(email) + '&license=' + encodeURIComponent(license);
+      window.open(formUrl, '_blank');
+    }
+
+    function scrollToWaitlist() {
+      document.getElementById('licInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('licInput').focus();
+    }
+
+    function switchState(state) {
+      ['ca', 'tx', 'fl'].forEach(s => {
+        document.getElementById('tab-' + s).className = s === state ? 'gs-state-tab active' : 'gs-state-tab inactive';
+      });
+      document.getElementById('resources-ca').style.display = state === 'ca' ? 'grid' : 'none';
+      document.getElementById('coming-note').style.display = state === 'ca' ? 'none' : 'block';
+    }
+
+    document.getElementById('licInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') runLookup();
+    });
+  </script>
+</body>
+</html>
